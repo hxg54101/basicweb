@@ -80,6 +80,26 @@ router.get(
 );
 
 router.get(
+  '/dlc',
+  asyncHandler(async (req, res) => {
+    const dlcItems = await query(
+      `SELECT
+        song_id as id,
+        song_name as title,
+        'S+' as rank,
+        CONCAT(players_best_score) as score,
+        dlc_required_name as dlc
+      FROM songs
+      WHERE dlc_required_name IS NOT NULL
+      ORDER BY players_best_score DESC
+      LIMIT 20`
+    );
+
+    res.json(dlcItems);
+  })
+);
+
+router.get(
   '/search/songs',
   asyncHandler(async (req, res) => {
     const searchQuery = req.query.q;

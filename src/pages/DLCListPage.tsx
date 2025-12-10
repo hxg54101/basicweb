@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import MainLayout from '../components/MainLayout';
 import EventSidebar from '../components/EventSidebar';
 import { Square } from 'lucide-react';
@@ -6,33 +7,45 @@ interface DLCListPageProps {
   onNavigate: (page: 'login' | 'signup' | 'dlc' | 'song' | 'gamecenter') => void;
 }
 
+interface DLCItem {
+  id: number;
+  rank: string;
+  title: string;
+  score: string;
+  dlc: string;
+}
+
 export default function DLCListPage({ onNavigate }: DLCListPageProps) {
-  const dlcItems = [
-    {
-      rank: 'S+',
-      title: 'Song Title 1',
-      score: '999,999',
-      dlc: 'DLC PACK NAME A',
-    },
-    {
-      rank: 'S',
-      title: 'Song Title 2',
-      score: '998,888',
-      dlc: 'DLC PACK NAME B',
-    },
-    {
-      rank: 'A+',
-      title: 'Song Title 3',
-      score: '997,777',
-      dlc: 'DLC PACK NAME C',
-    },
-    {
-      rank: 'A',
-      title: 'Song Title 4',
-      score: '996,666',
-      dlc: 'DLC PACK NAME A',
-    },
-  ];
+  const [dlcItems, setDlcItems] = useState<DLCItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchDLCItems();
+  }, []);
+
+  const fetchDLCItems = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/dlc');
+      if (!response.ok) throw new Error('Failed to fetch DLC items');
+      const data = await response.json();
+      const formattedData = data.map((item: any) => ({
+        id: item.id,
+        rank: item.rank,
+        title: item.title,
+        score: item.score?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') || '0',
+        dlc: item.dlc,
+      }));
+      setDlcItems(formattedData);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load data');
+      setDlcItems([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <MainLayout
@@ -41,8 +54,11 @@ export default function DLCListPage({ onNavigate }: DLCListPageProps) {
       sidebar={<EventSidebar showGameGrid={true} />}
     >
       <div className="space-y-4">
-        {dlcItems.map((item, index) => (
-          <div key={index} className="bg-[#333333] rounded p-6 flex gap-6">
+        {loading && <p className="text-gray-400">Loading...</p>}
+        {error && <p className="text-red-500">Error: {error}</p>}
+        {!loading && dlcItems.length === 0 && <p className="text-gray-400">No DLC items found</p>}
+        {dlcItems.map((item) => (
+          <div key={item.id} className="bg-[#333333] rounded p-6 flex gap-6">
             <div className="w-32 h-32 bg-[#555555] rounded flex-shrink-0 flex items-center justify-center">
               <Square className="text-gray-400" size={48} />
             </div>

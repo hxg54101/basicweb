@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import MainLayout from '../components/MainLayout';
 import EventSidebar from '../components/EventSidebar';
 import { Square } from 'lucide-react';
@@ -6,39 +7,46 @@ interface SongListPageProps {
   onNavigate: (page: 'login' | 'signup' | 'dlc' | 'song' | 'gamecenter') => void;
 }
 
+interface SongItem {
+  id: number;
+  rank: string;
+  title: string;
+  score: string;
+  dlc: string;
+}
+
 export default function SongListPage({ onNavigate }: SongListPageProps) {
-  const songItems = [
-    {
-      rank: 'S+',
-      title: 'Song Title Alpha',
-      score: '1,000,000',
-      dlc: 'PREMIUM DLC PACK',
-    },
-    {
-      rank: 'S',
-      title: 'Song Title Beta',
-      score: '999,500',
-      dlc: 'STANDARD DLC PACK',
-    },
-    {
-      rank: 'A+',
-      title: 'Song Title Gamma',
-      score: '998,200',
-      dlc: 'SPECIAL DLC PACK',
-    },
-    {
-      rank: 'A',
-      title: 'Song Title Delta',
-      score: '997,100',
-      dlc: 'PREMIUM DLC PACK',
-    },
-    {
-      rank: 'B+',
-      title: 'Song Title Epsilon',
-      score: '995,800',
-      dlc: 'STANDARD DLC PACK',
-    },
-  ];
+  const [songItems, setSongItems] = useState<SongItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchSongs();
+  }, []);
+
+  const fetchSongs = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/songs');
+      if (!response.ok) throw new Error('Failed to fetch songs');
+      const result = await response.json();
+      const data = result.data || [];
+      const formattedData = data.map((song: any) => ({
+        id: song.song_id,
+        rank: song.pattern_difficulty === 'Extreme' ? 'S+' : song.pattern_difficulty === 'Hard' ? 'S' : 'A+',
+        title: song.song_name,
+        score: song.players_best_score?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') || '0',
+        dlc: song.dlc_required_name || 'Free',
+      }));
+      setSongItems(formattedData);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load data');
+      setSongItems([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <MainLayout
@@ -47,8 +55,11 @@ export default function SongListPage({ onNavigate }: SongListPageProps) {
       sidebar={<EventSidebar showGameGrid={true} />}
     >
       <div className="space-y-4">
-        {songItems.map((item, index) => (
-          <div key={index} className="bg-[#333333] rounded p-6 flex gap-6">
+        {loading && <p className="text-gray-400">Loading...</p>}
+        {error && <p className="text-red-500">Error: {error}</p>}
+        {!loading && songItems.length === 0 && <p className="text-gray-400">No songs found</p>}
+        {songItems.map((item) => (
+          <div key={item.id} className="bg-[#333333] rounded p-6 flex gap-6">
             <div className="w-32 h-32 bg-[#555555] rounded flex-shrink-0 flex items-center justify-center">
               <Square className="text-gray-400" size={48} />
             </div>

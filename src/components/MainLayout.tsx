@@ -20,16 +20,6 @@ export default function MainLayout({ onNavigate, currentPage, sidebar, children 
 
             <div className="flex gap-3">
               <button
-                onClick={() => onNavigate('dlc')}
-                className={`px-6 py-2 rounded text-sm font-medium transition-colors ${
-                  currentPage === 'dlc'
-                    ? 'bg-[#90EE90] text-[#121212]'
-                    : 'bg-[#333333] text-white hover:bg-[#444444]'
-                }`}
-              >
-                Arcade
-              </button>
-              <button
                 onClick={() => onNavigate('song')}
                 className={`px-6 py-2 rounded text-sm font-medium transition-colors ${
                   currentPage === 'song'
@@ -37,7 +27,17 @@ export default function MainLayout({ onNavigate, currentPage, sidebar, children 
                     : 'bg-[#333333] text-white hover:bg-[#444444]'
                 }`}
               >
-                PC / Steam
+                Songs
+              </button>
+              <button
+                onClick={() => onNavigate('dlc')}
+                className={`px-6 py-2 rounded text-sm font-medium transition-colors ${
+                  currentPage === 'dlc'
+                    ? 'bg-[#90EE90] text-[#121212]'
+                    : 'bg-[#333333] text-white hover:bg-[#444444]'
+                }`}
+              >
+                DLC
               </button>
               <button
                 onClick={() => onNavigate('gamecenter')}
@@ -47,7 +47,7 @@ export default function MainLayout({ onNavigate, currentPage, sidebar, children 
                     : 'bg-[#333333] text-white hover:bg-[#444444]'
                 }`}
               >
-                Mobile
+                Arcade
               </button>
             </div>
           </div>

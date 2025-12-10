@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import MainLayout from '../components/MainLayout';
 import EventSidebar from '../components/EventSidebar';
 
@@ -5,39 +6,46 @@ interface GameCenterPageProps {
   onNavigate: (page: 'login' | 'signup' | 'dlc' | 'song' | 'gamecenter') => void;
 }
 
+interface GameCenter {
+  id: number;
+  name: string;
+  location: string;
+  distance: string;
+  distColor: string;
+}
+
 export default function GameCenterPage({ onNavigate }: GameCenterPageProps) {
-  const gameCenters = [
-    {
-      name: 'Game Center Alpha',
-      location: 'Seoul, Gangnam District, Street Address 123',
-      distance: '0.5km',
-      distColor: 'green',
-    },
-    {
-      name: 'Game Center Beta',
-      location: 'Seoul, Hongdae Area, Street Address 456',
-      distance: '1.2km',
-      distColor: 'orange',
-    },
-    {
-      name: 'Game Center Gamma',
-      location: 'Seoul, Itaewon District, Street Address 789',
-      distance: '2.8km',
-      distColor: 'green',
-    },
-    {
-      name: 'Game Center Delta',
-      location: 'Seoul, Sinchon Area, Street Address 321',
-      distance: '3.5km',
-      distColor: 'orange',
-    },
-    {
-      name: 'Game Center Epsilon',
-      location: 'Seoul, Myeongdong District, Street Address 654',
-      distance: '4.1km',
-      distColor: 'green',
-    },
-  ];
+  const [gameCenters, setGameCenters] = useState<GameCenter[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchGameCenters();
+  }, []);
+
+  const fetchGameCenters = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/gamecenters');
+      if (!response.ok) throw new Error('Failed to fetch game centers');
+      const result = await response.json();
+      const data = result.data || [];
+      const formattedData = data.map((center: any) => ({
+        id: center.gamecenter_id,
+        name: center.gamecenter_name,
+        location: center.gamecenter_locate,
+        distance: `${center.distance_km}km`,
+        distColor: parseFloat(center.distance_km) < 2 ? 'green' : 'orange',
+      }));
+      setGameCenters(formattedData);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load data');
+      setGameCenters([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <MainLayout
@@ -46,8 +54,11 @@ export default function GameCenterPage({ onNavigate }: GameCenterPageProps) {
       sidebar={<EventSidebar showGameGrid={true} />}
     >
       <div className="space-y-4">
-        {gameCenters.map((center, index) => (
-          <div key={index} className="bg-[#333333] rounded p-6">
+        {loading && <p className="text-gray-400">Loading...</p>}
+        {error && <p className="text-red-500">Error: {error}</p>}
+        {!loading && gameCenters.length === 0 && <p className="text-gray-400">No game centers found</p>}
+        {gameCenters.map((center) => (
+          <div key={center.id} className="bg-[#333333] rounded p-6">
             <div className="flex justify-between items-start mb-3">
               <div className="flex-1">
                 <h3 className="text-white text-xl font-semibold mb-2">{center.name}</h3>
