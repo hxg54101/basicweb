@@ -40,7 +40,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api', dataRoutes);
 
 app.get('/', (req, res) => {
-  res.sendFile(path.join(publicDir, 'login.html'));
+  res.sendFile(path.join(publicDir, 'home.html'));
 });
 
 app.use((req, res) => {
