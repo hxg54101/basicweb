@@ -8,12 +8,26 @@ router.get(
   '/events',
   asyncHandler(async (req, res) => {
     const events = await query(
-      'SELECT * FROM events ORDER BY event_start_date DESC LIMIT 20'
+      'SELECT EVENT_TITLE, EVENT_DETAIL, EVENT_START_DATE, EVENT_END_DATE FROM arcade WHERE EVENT_TITLE IS NOT NULL ORDER BY EVENT_START_DATE DESC LIMIT 20'
     );
 
     res.json({
       success: true,
       data: events,
+    });
+  })
+);
+
+router.get(
+  '/patches',
+  asyncHandler(async (req, res) => {
+    const patches = await query(
+      'SELECT PATCH_TITLE, PATCH_DETAIL, PATCH_RELEASE_DATE FROM arcade WHERE PATCH_TITLE IS NOT NULL ORDER BY PATCH_RELEASE_DATE DESC LIMIT 20'
+    );
+
+    res.json({
+      success: true,
+      data: patches,
     });
   })
 );
@@ -27,23 +41,20 @@ router.get(
 
     const songs = await query(
       `SELECT
-        song_id,
-        song_name,
-        artist_name,
-        pattern_difficulty,
-        pattern_lv,
-        players_best_score,
-        player_name,
-        clear_type,
-        song_jacket_url,
-        dlc_required_name,
-        clear_video_link
-      FROM songs
+        ranking_id,
+        SONG_NAME,
+        ARTIST_NAME,
+        PATTERN_DIFFICULTY,
+        PATTERN_LV,
+        BEST_SCORE,
+        PLAYER_NAME,
+        CLEAR_TYPE
+      FROM pc_ranking
       LIMIT ? OFFSET ?`,
       [limit, offset]
     );
 
-    const countResult = await query('SELECT COUNT(*) as total FROM songs');
+    const countResult = await query('SELECT COUNT(*) as total FROM pc_ranking');
     const total = countResult[0].total;
 
     res.json({
@@ -64,12 +75,12 @@ router.get(
   asyncHandler(async (req, res) => {
     const gamecenters = await query(
       `SELECT
-        gamecenter_id,
-        gamecenter_name,
-        gamecenter_locate,
-        distance_km
-      FROM game_centers
-      ORDER BY distance_km ASC`
+        arcade_id,
+        GAMECENTER_NAME,
+        GAMECENTER_LOCATE
+      FROM arcade
+      WHERE GAMECENTER_NAME IS NOT NULL
+      ORDER BY arcade_id ASC`
     );
 
     res.json({
@@ -84,14 +95,13 @@ router.get(
   asyncHandler(async (req, res) => {
     const dlcItems = await query(
       `SELECT
-        song_id as id,
-        song_name as title,
+        ranking_id as id,
+        SONG_NAME as title,
         'S+' as rank,
-        CONCAT(players_best_score) as score,
-        dlc_required_name as dlc
-      FROM songs
-      WHERE dlc_required_name IS NOT NULL
-      ORDER BY players_best_score DESC
+        BEST_SCORE as score,
+        'DLC Required' as dlc
+      FROM pc_ranking
+      ORDER BY BEST_SCORE DESC
       LIMIT 20`
     );
 
@@ -113,19 +123,16 @@ router.get(
 
     const results = await query(
       `SELECT
-        song_id,
-        song_name,
-        artist_name,
-        pattern_difficulty,
-        pattern_lv,
-        players_best_score,
-        player_name,
-        clear_type,
-        song_jacket_url,
-        dlc_required_name,
-        clear_video_link
-      FROM songs
-      WHERE song_name LIKE ? OR artist_name LIKE ? OR dlc_required_name LIKE ?
+        ranking_id,
+        SONG_NAME,
+        ARTIST_NAME,
+        PATTERN_DIFFICULTY,
+        PATTERN_LV,
+        BEST_SCORE,
+        PLAYER_NAME,
+        CLEAR_TYPE
+      FROM pc_ranking
+      WHERE SONG_NAME LIKE ? OR ARTIST_NAME LIKE ? OR PLAYER_NAME LIKE ?
       LIMIT 20`,
       [`%${searchQuery}%`, `%${searchQuery}%`, `%${searchQuery}%`]
     );

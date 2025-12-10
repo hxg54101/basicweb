@@ -32,11 +32,11 @@ export default function SongListPage({ onNavigate }: SongListPageProps) {
       const result = await response.json();
       const data = result.data || [];
       const formattedData = data.map((song: any) => ({
-        id: song.song_id,
-        rank: song.pattern_difficulty === 'Extreme' ? 'S+' : song.pattern_difficulty === 'Hard' ? 'S' : 'A+',
-        title: song.song_name,
-        score: song.players_best_score?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') || '0',
-        dlc: song.dlc_required_name || 'Free',
+        id: song.ranking_id,
+        rank: song.PATTERN_DIFFICULTY === 'Extreme' ? 'S+' : song.PATTERN_DIFFICULTY === 'Hard' ? 'S' : 'A+',
+        title: song.SONG_NAME,
+        score: song.BEST_SCORE?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') || '0',
+        dlc: song.CLEAR_TYPE || 'N/A',
       }));
       setSongItems(formattedData);
       setError(null);

@@ -61,7 +61,7 @@ export default function MainLayout({ onNavigate, currentPage, sidebar, children 
         </div>
       </header>
 
-      <div className="flex">
+      <div className="flex px-[100px]">
         <aside className="w-[30%] min-h-[calc(100vh-73px)] bg-[#121212] border-r border-gray-800 p-6">
           {sidebar}
         </aside>

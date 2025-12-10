@@ -30,12 +30,12 @@ export default function GameCenterPage({ onNavigate }: GameCenterPageProps) {
       if (!response.ok) throw new Error('Failed to fetch game centers');
       const result = await response.json();
       const data = result.data || [];
-      const formattedData = data.map((center: any) => ({
-        id: center.gamecenter_id,
-        name: center.gamecenter_name,
-        location: center.gamecenter_locate,
-        distance: `${center.distance_km}km`,
-        distColor: parseFloat(center.distance_km) < 2 ? 'green' : 'orange',
+      const formattedData = data.map((center: any, index: number) => ({
+        id: center.arcade_id,
+        name: center.GAMECENTER_NAME,
+        location: center.GAMECENTER_LOCATE,
+        distance: `${(index + 1) * 0.5}km`,
+        distColor: (index + 1) * 0.5 < 2 ? 'green' : 'orange',
       }));
       setGameCenters(formattedData);
       setError(null);
